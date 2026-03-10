@@ -4,7 +4,6 @@ import org.bukkit.*;
 import org.bukkit.entity.*;
 import org.bukkit.event.*;
 import org.bukkit.event.block.*;
-import org.bukkit.event.entity.*;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.*;
 import org.bukkit.inventory.meta.*;
@@ -22,6 +21,8 @@ public class GuildItemsPlugin extends JavaPlugin implements Listener {
     public void onEnable() {
         Bukkit.getPluginManager().registerEvents(this, this);
         registerAllItems();
+        startAuraTask();
+        getLogger().info("Plugin GuildItems zostal pomyslnie wlaczony!");
     }
 
     private void registerAllItems() {
@@ -85,27 +86,47 @@ public class GuildItemsPlugin extends JavaPlugin implements Listener {
 
             switch (id) {
                 case "vampire_sword" -> {
-                    p.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 100, 2));
-                    p.sendMessage("§4Wampiryzm!");
+                    p.addPotionEffect(new PotionEffect(PotionEffectType.REGENERATION, 100, 1));
+                    p.sendMessage("§4Aktywowano regeneracje wampira!");
                 }
                 case "escape_totem" -> {
                     p.teleport(p.getLocation().add(Math.random()*20-10, 0, Math.random()*20-10));
-                    p.sendMessage("§5Teleportacja!");
+                    p.sendMessage("§5Ucieczka!");
                 }
                 case "web_ball" -> {
                     p.launchProjectile(Snowball.class);
-                    p.sendMessage("§fWystrzelono sieć!");
                 }
                 case "thor_hammer" -> {
-                    p.getWorld().strikeLightning(p.getTargetBlockExact(50).getLocation());
-                    p.sendMessage("§ePoczuj gniew Thora!");
+                    Block target = p.getTargetBlockExact(30);
+                    if (target != null) p.getWorld().strikeLightning(target.getLocation());
                 }
                 case "berserk_pot" -> {
-                    p.addPotionEffect(new PotionEffect(PotionEffectType.INCREASE_DAMAGE, 300, 1));
-                    p.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 300, 1));
-                    p.sendMessage("§4SZAŁ BERSERKERA!");
+                    p.addPotionEffect(new PotionEffect(PotionEffectType.INCREASE_DAMAGE, 200, 1));
+                    p.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, 200, 1));
+                    item.setAmount(item.getAmount() - 1);
                 }
             }
+        }
+    }
+
+    private void startAuraTask() {
+        Bukkit.getScheduler().runTaskTimer(this, () -> {
+            for (Player p : Bukkit.getOnlinePlayers()) {
+                checkAura(p, p.getInventory().getItemInMainHand());
+                checkAura(p, p.getInventory().getItemInOffHand());
+            }
+        }, 20L, 20L);
+    }
+
+    private void checkAura(Player p, ItemStack item) {
+        if (item == null || !item.hasItemMeta()) return;
+        String id = item.getItemMeta().getPersistentDataContainer().get(itemKey, PersistentDataType.STRING);
+        if (id == null) return;
+
+        if (id.equals("strength_flag")) {
+            p.addPotionEffect(new PotionEffect(PotionEffectType.INCREASE_DAMAGE, 40, 0, true, false));
+        } else if (id.equals("defense_flag")) {
+            p.addPotionEffect(new PotionEffect(PotionEffectType.DAMAGE_RESISTANCE, 40, 0, true, false));
         }
     }
 
