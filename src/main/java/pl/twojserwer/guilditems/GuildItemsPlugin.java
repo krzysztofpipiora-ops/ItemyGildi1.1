@@ -1,9 +1,8 @@
 package pl.twojserwer.guilditems;
-
+import org.bukkit.block.Block;
 import net.dzikoysk.funnyguilds.user.User;
 import net.dzikoysk.funnyguilds.guild.Guild;
 import org.bukkit.*;
-import org.bukkit.block.Block;
 import org.bukkit.entity.*;
 import org.bukkit.event.*;
 import org.bukkit.event.block.*;
